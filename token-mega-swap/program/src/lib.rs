@@ -7,9 +7,9 @@ pub mod instruction;
 mod invoke;
 pub mod math;
 pub mod processor;
-pub mod state;
 #[cfg(test)]
 mod processor_tests;
+pub mod state;
 #[cfg(test)]
 mod test;
 

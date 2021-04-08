@@ -7,15 +7,14 @@ use solana_program::{instruction::AccountMeta, program_error::ProgramError, pubk
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Debug, Clone, BorshSchema)]
 pub struct InitializeAssetInput {
+    pub weight: u64,
 }
-
 
 /// Instructions
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Debug, Clone, ToPrimitive)]
 pub enum Instruction {
-    
-    /// Initializes asset input 
-    /// 
+    /// Initializes asset input
+    ///
     /// Inputs:
     ///  InitializeAssetInput
     ///  
@@ -26,8 +25,8 @@ pub enum Instruction {
     ///   - writable  token              Token account to store assets, owner should be asset authority    
     InitializeAsset,
 
-    /// Initializes pool of assets 
-    /// 
+    /// Initializes pool of assets
+    ///
     /// Inputs:
     ///  InitializeAssetInput
     ///  
@@ -37,13 +36,12 @@ pub enum Instruction {
     ///   -            pool               New pool to initialize    
     ///   - writable   pool_mint          New pool mint to initialize
     ///   - writable   [asset]            Accounts of initialized assets with the same pool address
-    InitializePool,		
+    InitializePool,
 
     Deposit,
     Withdraw,
     Swap,
     UpdateWeight,
-    
 }
 
 // // /// Create `Prepare` instruction

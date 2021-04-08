@@ -10,9 +10,8 @@ use thiserror::Error;
 /// Errors that may be returned by the program.
 #[derive(Clone, Debug, Eq, Error, FromPrimitive, PartialEq)]
 pub enum PoolError {
-    /// Required liquidity token ab is more than max
-    #[error("Required liquidity token AB is more than max")]
-    RequiredLiquidityTokenABIsMoreThanMax,
+    #[error("Token must be under asset authority")]
+    TokenMustBeUnderAssetAuthority,
 }
 
 impl From<PoolError> for ProgramError {

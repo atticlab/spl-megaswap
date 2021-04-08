@@ -1,101 +1,116 @@
 //! Program state processor
+use std::borrow::BorrowMut;
+
 #[allow(unused_imports)]
 use borsh::{BorshDeserialize, BorshSerialize};
 use num_traits::ToPrimitive;
 use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
-    program_pack::Pack, pubkey::Pubkey,
+    account_info::AccountInfo, entrypoint::ProgramResult, msg, program::invoke,
+    program_error::ProgramError, program_pack::Pack, pubkey::Pubkey, rent::Rent,
+    system_instruction, system_program, sysvar::Sysvar,
 };
-use spl_token::state::Account;
+use spl_token::state::{Account, Mint};
 
 use super::borsh::*;
-use crate::{error::PoolError, instruction::{InitializeAssetInput, Instruction}, invoke::{self}};
+use crate::{
+    borsh::*,
+    error::PoolError,
+    instruction::{InitializeAssetInput, Instruction},
+    invoke::{self},
+    state::*,
+};
 
 /// Program state handler.
 pub struct Processor {}
 impl Processor {
     #[allow(clippy::too_many_arguments)]
-    fn prepare<'a>(
-        _program_id: &Pubkey,
-        program_token: &AccountInfo<'a>,
-        swap: &AccountInfo<'a>,
-        _swap_authority: &AccountInfo<'a>,
-        signer: &AccountInfo<'a>,
-        token_user_ab: &AccountInfo<'a>,
-        token_user_bc: &AccountInfo<'a>,
-        token_swap_ab: &AccountInfo<'a>,
-        token_swap_bc: &AccountInfo<'a>,
-        swap_ab: &AccountInfo<'a>,
-        token_swap_ab_total: &AccountInfo<'a>,
-        token_swap_ab_b_total: &AccountInfo<'a>,
-        swap_bc: &AccountInfo<'a>,
-        token_swap_bc_total: &AccountInfo<'a>,
-        token_swap_bc_b_total: &AccountInfo<'a>,
+    fn initialize_asset<'a>(
+        program_id: &Pubkey,
+        rent: &AccountInfo<'a>,
+        pool: &AccountInfo<'a>,
+        asset: &AccountInfo<'a>,
+        token: &AccountInfo<'a>,
         input: &InitializeAssetInput,
     ) -> ProgramResult {
-        todo!()
-        // if !signer.is_signer || !swap.is_signer {
-        //     return Err(PoolError::TokenProviderAndSwapMustBeSigners.into());
-        // }
-
-        // let token_swap_ab_data = swap_ab.try_borrow_data()?;
-        // let token_swap_ab_data = SwapVersion::unpack(&token_swap_ab_data[..])?;
-        // let token_swap_bc_data = swap_bc.try_borrow_data()?;
-        // let token_swap_bc_data = SwapVersion::unpack(&token_swap_bc_data[..])?;
-
-        // let token_swap_ab_total =
-        //     Account::unpack_from_slice(&token_swap_ab_total.try_borrow_data().unwrap()[..])?;
-
-        // let token_swap_bc_total =
-        //     Account::unpack_from_slice(&token_swap_bc_total.try_borrow_data().unwrap()[..])?;
-
-        // let token_swap_ab_b_total =
-        //     Account::unpack_from_slice(&token_swap_ab_b_total.try_borrow_data().unwrap()[..])?;
-
-        // let token_swap_bc_b_total =
-        //     Account::unpack_from_slice(&token_swap_bc_b_total.try_borrow_data().unwrap()[..])?;
-
-        // if &token_swap_ab_total.mint != token_swap_ab_data.pool_mint()
-        //     || &token_swap_bc_total.mint != token_swap_bc_data.pool_mint()
-        // {
-        //     return Err(PoolError::OperationMustBeOnTwoPoolTokens.into());
-        // }
-
-        // if let Some(liquidity_pool_bc_amount) = crate::math::prepare_amounts(
-        //     token_swap_ab_b_total.amount,
-        //     input.liquidity_pool_ab_exact,
-        //     token_swap_ab_total.amount,
-        //     token_swap_bc_total.amount,
-        //     token_swap_bc_b_total.amount,
-        // )
-        // .map(|x| x.to_u64())
-        // .flatten()
-        // {
-        //     if liquidity_pool_bc_amount > input.liquidity_pool_bc_max {
-        //         return Err(PoolError::TooSmallAmountOfBcLiquidity.into());
-        //     }
-        //     invoke::token_transfer(
-        //         &program_token,
-        //         &token_user_ab,
-        //         &token_swap_ab,
-        //         &signer,
-        //         input.liquidity_pool_ab_exact,
-        //     )?;
-
-        //     invoke::token_transfer(
-        //         &program_token,
-        //         &token_user_bc,
-        //         &token_swap_bc,
-        //         &signer,
-        //         liquidity_pool_bc_amount,
-        //     )?;
-
-        //     Ok(())
-        // } else {
-        //     Err(PoolError::TooUnbalancedInput.into())
-        // }
+        let rent = Rent::from_account_info(rent)?;
+        if rent.is_exempt(asset.lamports(), AssetState::len())
+            || rent.is_exempt(token.lamports(), Account::LEN)
+        {
+            let token = token.try_borrow_data()?;
+            let token = spl_token::state::Account::unpack_from_slice(&token[..])?;
+            let (authority, _) =
+                Pubkey::find_program_address(&[&asset.key.to_bytes()[..32]], &program_id);
+            if token.owner == authority {
+                let mut state: AssetState = asset.read_data_with_borsh()?;
+                if state.version == AssetVersion::Uninitialized {
+                    state.version = AssetVersion::InitializedV1;
+                    state.weight = input.weight;
+                    // consider validation that token of specific token program ownership
+                    //state.token = token.key;
+                    state.pool = *pool.key;
+                    let mut data = asset.try_borrow_mut_data()?;
+                    state.serialize_const(&mut data[..])?;
+                    Ok(())
+                } else {
+                    return Err(ProgramError::AccountAlreadyInitialized);
+                }
+            } else {
+                return Err(PoolError::TokenMustBeUnderAssetAuthority.into());
+            }
+        } else {
+            return Err(ProgramError::AccountNotRentExempt);
+        }
     }
 
+    #[allow(clippy::too_many_arguments)]
+    fn initialize_pool<'a>(
+        program_id: &Pubkey,
+        rent: &AccountInfo<'a>,
+        program_token: &AccountInfo<'a>,
+        pool: &AccountInfo<'a>,
+        pool_mint: &AccountInfo<'a>,
+        assets: &'_ [AccountInfo<'_>],
+    ) -> ProgramResult {
+        let rent = Rent::from_account_info(rent)?;
+        if rent.is_exempt(pool.lamports(), PoolState::len())
+            || rent.is_exempt(pool_mint.lamports(), Mint::LEN)
+        {
+            let weight_total = {
+                let assets: Result<Vec<AssetState>, ProgramError> = assets
+                    .iter()
+                    .map(|x| x.read_data_with_borsh::<AssetState>())
+                    .collect();
+                let assets = assets?;
+                if assets
+                    .iter()
+                    .any(|x| x.version == AssetVersion::Uninitialized || x.pool != *pool.key)
+                {
+                    return Err(ProgramError::UninitializedAccount);
+                }
+                assets.iter().map(|x| x.weight).sum()
+            };
+
+            let seeds: Vec<_> = assets.iter().map(|x| x.key.to_bytes()).collect();
+
+            let mut state: PoolState = pool.read_data_with_borsh()?;
+            if state.version == PoolVersion::Uninitialized {
+                state.version = PoolVersion::InitializedV1;
+                // may consider validating mint is really mint of token program
+                state.pool_mint = *pool_mint.key;
+                state.weight_total = weight_total;
+                // may consider sorting keys before hashing
+                let seeds: Vec<&[u8]> = seeds.iter().map(|x| &x[..]).collect();
+                state.assets_hash = Pubkey::find_program_address(&seeds[..], program_id).0;
+                let mut data = pool.try_borrow_mut_data()?;
+                state.serialize_const(&mut data[..])?;
+                return Ok(());
+            } else {
+                return Err(ProgramError::AccountAlreadyInitialized);
+            }
+        } else {
+            return Err(ProgramError::AccountNotRentExempt);
+        }
+    }
 
     /// Processes an instruction
     pub fn process_instruction(
@@ -108,32 +123,30 @@ impl Processor {
             Instruction::InitializeAsset => {
                 msg!("Instruction: InitializeAsset");
                 match accounts {
-                    [program_token, swap, swap_authority, signer, token_user_ab, token_user_bc, token_swap_ab, token_swap_bc, swap_ab, token_swap_ab_total, token_swap_ab_b_total, swap_bc, token_swap_bc_total, token_swap_bc_b_total, ..] =>
-                    {
-                        let input = super::instruction::InitializeAssetInput::deserialize_const(&input[1..])?;
-                        Self::prepare(
-                            program_id,
-                            program_token,
-                            swap,
-                            swap_authority,
-                            signer,
-                            token_user_ab,
-                            token_user_bc,
-                            token_swap_ab,
-                            token_swap_bc,
-                            swap_ab,
-                            token_swap_ab_total,
-                            token_swap_ab_b_total,
-                            swap_bc,
-                            token_swap_bc_total,
-                            token_swap_bc_b_total,
-                            &input,
-                        )
+                    [rent, pool, asset, token, ..] => {
+                        let input = super::instruction::InitializeAssetInput::deserialize_const(
+                            &input[1..],
+                        )?;
+                        Self::initialize_asset(program_id, rent, pool, asset, token, &input)
                     }
                     _ => Err(ProgramError::NotEnoughAccountKeys),
                 }
             }
-            _ => todo!()
+            Instruction::InitializePool => {
+                msg!("Instruction: InitializeAsset");
+                match accounts {
+                    [rent, program_token, pool, pool_mint, ..] => Self::initialize_pool(
+                        program_id,
+                        rent,
+                        program_token,
+                        pool,
+                        pool_mint,
+                        &accounts[4..],
+                    ),
+                    _ => Err(ProgramError::NotEnoughAccountKeys),
+                }
+            }
+            _ => todo!(),
         }
     }
 }
