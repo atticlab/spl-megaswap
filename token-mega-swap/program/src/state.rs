@@ -18,7 +18,6 @@ pub enum AssetVersion {
     InitializedV1,
 } 
 
-// Pool constraints.
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Debug, Clone, BorshSchema)]
 pub struct PoolState {
@@ -37,9 +36,16 @@ pub struct PoolState {
     // authority_weights	Pubkey	
 }
 
-// Asset		
-// version	u8	Asset state version
-// pool	Pubkey	Reference to the pool, empty if not added to the pool
-// token_account	Pubkey	Account storing tokens
-// weight	u64	This asset weight
-// weight_valid_until	u64	Cutoff timestamp of weight validity
+#[repr(C)]
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Debug, Clone, BorshSchema)]
+pub struct AssetState {
+    pub version: AssetVersion,
+    /// Reference to the pool
+    pub pool: Pubkey,
+    /// Account storing tokens
+    pub token_account:	Pubkey,	
+    /// This asset weight
+    pub weight:	u64,
+    // weight_valid_until	u64	Cutoff timestamp of weight validity
+}
+
