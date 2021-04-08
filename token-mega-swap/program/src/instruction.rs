@@ -9,61 +9,41 @@ use solana_program::{instruction::AccountMeta, program_error::ProgramError, pubk
 pub struct InitializeAssetInput {
 }
 
+
 /// Instructions
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Debug, Clone, ToPrimitive)]
 pub enum Instruction {
-    ///   Initializes a new mega swap.  
-    ///   AB and BC token balances must satisfy constraints. Use math module get satisfying value.
-    ///   Must be executed before `spl_token_swap::instruction::Initialize` in same transaction.
-    ///
-    ///   Accounts:
-    ///   - `[]`                 program_token      
-    ///   - `[writable, signer]` swap                    New Token-swap to prepare.
-    ///   - `[]                  swap_authority          derived from `create_program_address(&[Token-swap account])`
-    ///   - `[signer]`           signer                  User authority
-    ///   - `[writable]`         token_user_ab           Token owned by user Authority.
-    ///   - `[writable]`         token_user_bc           Token owned by user authority.
-    ///   - `[writable]`         token_swap_ab           Must be zero, owned by swap authority.
-    ///   - `[writable]`         token_swap_bc           Must be zero, owned by swap authority.
-    //    - `[]`                 swap_ab                 Swap from A to B
-    ///   - `[]`                 token_swap_ab_total          
-    ///   - `[]`                 token_swap_ab_b_total      
-    //    -  []                  swap_bc                 Swap from B to C
-    ///   - `[]`                 token_swap_bc_total   
-    ///   - `[]`                 token_swap_bc_b_total
+    
+    /// Initializes asset input 
+    /// 
+    /// Inputs:
+    ///  InitializeAssetInput
+    ///  
+    /// Accounts:
+    ///   -           rent               Sysvar rent to check rent exempt balance on asset and token
+    ///   -           pool               Pool this asset will belong to
+    ///   - writable  asset              New asset account to initialize
+    ///   - writable  token              Token account to store assets, owner should be asset authority    
     InitializeAsset,
 
-    ///   Swap the tokens in the pool. Accepts `spl_token_swap::instruction::Swap` input.
-    ///
-    ///   Swaps A to C via AB and BC pools.
-    ///
+    /// Initializes pool of assets 
+    /// 
+    /// Inputs:
+    ///  InitializeAssetInput
+    ///  
     /// Accounts:
-    /// []                  program_token
-    /// []                  program_token_swap
-    /// []                  swap_ab_authority
-    /// []                  token_mint_ab
-    /// [writable]          token_swap_ab
-    /// [writable]          token_swap_ab_a
-    /// [writable]          token_swap_ab_b
-    /// []                  swap_bc_authority
-    /// []                  token_mint_bc
-    /// [writable]          token_swap_bc
-    /// [writable]          token_swap_bc_b
-    /// [writable]          token_swap_bc_c
-    /// [writable]          token_swap_bc_supply
-    /// [writable]          token_swap_bc_fee
-    /// []                  swap_abc_authority
-    /// []                  token_mint_abc
-    /// []                  token_swap_abc
-    /// [writable]          token_swap_abc_ab
-    /// [writable]          token_swap_abc_bc
-    /// [writable]          token_swap_abc_fee
-    /// [writable]          token_user_a
-    /// [writable]          token_user_ab_temp
-    /// [writable]          token_user_bc_temp
-    /// [writable]          token_user_c
-    /// [signer]            signer    
+    ///   -            rent               Rent sysvar to check pool and pool_mint accounts balance
+    ///   -            program_token      Token program used to initialize the pool_mint
+    ///   -            pool               New pool to initialize    
+    ///   - writable   pool_mint          New pool mint to initialize
+    ///   - writable   [asset]            Accounts of initialized assets with the same pool address
+    InitializePool,		
+
+    Deposit,
+    Withdraw,
     Swap,
+    UpdateWeight,
+    
 }
 
 // // /// Create `Prepare` instruction
