@@ -2,7 +2,7 @@
 
 use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
 use num_derive::{FromPrimitive, ToPrimitive};
-use solana_program::{instruction::AccountMeta, program_error::ProgramError, pubkey::Pubkey};
+use solana_program::pubkey::Pubkey;
 
 #[repr(C)]
 #[derive(

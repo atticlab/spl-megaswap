@@ -50,7 +50,7 @@ pub fn initialize_asset(
     rent: &Pubkey,
     pool: &Pubkey,
     asset: &Pubkey,
-    token: &Pubkey,    
+    token: &Pubkey,
     input: InitializeAssetInput,
 ) -> Result<solana_program::instruction::Instruction, ProgramError> {
     let mut data = Instruction::InitializeAsset.try_to_vec()?;
@@ -59,8 +59,8 @@ pub fn initialize_asset(
     let accounts = vec![
         AccountMeta::new_readonly(*rent, false),
         AccountMeta::new_readonly(*pool, false), // makes sure prepare in same transaction
-        AccountMeta::new(*asset, false),        
-        AccountMeta::new(*token, false),        
+        AccountMeta::new(*asset, false),
+        AccountMeta::new(*token, false),
     ];
     Ok(solana_program::instruction::Instruction {
         program_id: crate::id(),
@@ -72,21 +72,18 @@ pub fn initialize_asset(
 /// Create `InitializePool` instruction
 #[allow(clippy::too_many_arguments)]
 pub fn initialize_pool(
-    rent:&Pubkey,
+    rent: &Pubkey,
     program_token: &Pubkey,
-    pool:&Pubkey,
+    pool: &Pubkey,
     pool_mint: &Pubkey,
-    assets:&[Pubkey],
-    input: InitializeAssetInput,
+    assets: &[Pubkey],
 ) -> Result<solana_program::instruction::Instruction, ProgramError> {
-    let mut data = Instruction::InitializeAsset.try_to_vec()?;
-    let mut input = input.try_to_vec()?;
-    data.append(&mut input);
+    let data = Instruction::InitializePool.try_to_vec()?;
     let mut accounts = vec![
         AccountMeta::new_readonly(*rent, false),
         AccountMeta::new_readonly(*program_token, false), // makes sure prepare in same transaction
-        AccountMeta::new_readonly(*pool, false), // makes sure prepare in same transaction
-        AccountMeta::new(*pool_mint, false),        
+        AccountMeta::new_readonly(*pool, false),          // makes sure prepare in same transaction
+        AccountMeta::new(*pool_mint, false),
     ];
 
     for asset in assets {
@@ -99,4 +96,3 @@ pub fn initialize_pool(
         data,
     })
 }
-

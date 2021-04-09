@@ -1,13 +1,9 @@
 //! Program state processor
-use std::borrow::BorrowMut;
-
 #[allow(unused_imports)]
 use borsh::{BorshDeserialize, BorshSerialize};
-use num_traits::ToPrimitive;
 use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, msg, program::invoke,
-    program_error::ProgramError, program_pack::Pack, pubkey::Pubkey, rent::Rent,
-    system_instruction, system_program, sysvar::Sysvar,
+    account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
+    program_pack::Pack, pubkey::Pubkey, rent::Rent, sysvar::Sysvar,
 };
 use spl_token::state::{Account, Mint};
 
@@ -65,9 +61,9 @@ impl Processor {
     fn initialize_pool<'a>(
         program_id: &Pubkey,
         rent: &AccountInfo<'a>,
-        program_token: &AccountInfo<'a>,
+        _program_token: &AccountInfo<'a>,
         pool: &AccountInfo<'a>,
-        pool_mint: &AccountInfo<'a>, // to initialize mint we need pool_token mint_to, and default value of tokens in pool. there are 2 options - create account out of chain and pass or on chain; and authority could be pool or not 
+        pool_mint: &AccountInfo<'a>, // to initialize mint we need pool_token mint_to, and default value of tokens in pool. there are 2 options - create account out of chain and pass or on chain; and authority could be pool or not
         assets: &'_ [AccountInfo<'_>],
     ) -> ProgramResult {
         let rent = Rent::from_account_info(rent)?;

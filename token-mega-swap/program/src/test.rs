@@ -3,7 +3,13 @@
 
 use std::marker::PhantomData;
 
-use solana_program::{program_pack::Pack, pubkey::Pubkey, rent::Rent, system_instruction, sysvar::{self, SysvarId}};
+use solana_program::{
+    program_pack::Pack,
+    pubkey::Pubkey,
+    rent::Rent,
+    system_instruction,
+    sysvar::{self, SysvarId},
+};
 use solana_program_test::*;
 use solana_sdk::{
     signature::{Keypair, Signer},
@@ -46,11 +52,9 @@ pub struct Token<T> {
     pub phantom_data: PhantomData<T>,
 }
 
-
 pub struct Asset {
     pub account: Keypair,
 }
-
 
 impl Asset {
     pub fn pubkey(&self) -> Pubkey {
@@ -58,10 +62,9 @@ impl Asset {
     }
 }
 
-
 pub struct CreateAssetTransaction {
-    transaction : Transaction,
-    result : Asset,
+    transaction: Transaction,
+    result: Asset,
 }
 
 impl<T> Token<T> {
@@ -211,12 +214,21 @@ pub fn create_token_account<T>(
 
 pub struct CreateMegaSwapTransaction<A> {
     transaction: Transaction,
-    swap: TokenMegaSwap<A>,
+    result: TokenMegaSwap<A>,
+}
+
+impl<T> CreateMegaSwapTransaction<T> {
+    pub async fn process_transaction(self, banks_client: &mut BanksClient) -> TokenMegaSwap<T> {
+        banks_client
+            .process_transaction(self.transaction)
+            .await
+            .unwrap();
+        self.result
+    }
 }
 
 pub struct TokenMegaSwap<A> {
     pub pool: ProgramAuthority,
-    pub assets: Vec<Asset>,
     pub mint: Mint<A>,
 }
 
@@ -245,7 +257,7 @@ pub fn create_asset<T>(
     payer: &Keypair,
     pool: &Pubkey,
     asset: ProgramAuthority,
-    token: &Token<T>,    
+    token: &Token<T>,
     input: InitializeAssetInput,
 ) -> CreateAssetTransaction {
     let rent = bank.rent.minimum_balance(crate::state::AssetState::len());
@@ -272,12 +284,47 @@ pub fn create_asset<T>(
     CreateAssetTransaction {
         transaction,
         result: Asset {
-            account : asset.account
+            account: asset.account,
         },
     }
 }
 
+pub fn create_mega_swap<T>(
+    bank: &BankInfo,
+    payer: &Keypair,
+    pool: ProgramAuthority,
+    pool_mint: Mint<T>,
+    assets: &[Pubkey],
+) -> CreateMegaSwapTransaction<T> {
+    let rent = bank.rent.minimum_balance(crate::state::PoolState::len());
+    let instructions = vec![
+        system_instruction::create_account(
+            &payer.pubkey(),
+            &pool.pubkey(),
+            rent,
+            crate::state::PoolState::len() as u64,
+            &crate::id(),
+        ),
+        crate::instruction::initialize_pool(
+            &sysvar::rent::id(),
+            &spl_token::id(),
+            &pool.pubkey(),
+            &pool_mint.pubkey(),
+            &assets,
+        )
+        .unwrap(),
+    ];
 
+    let mut transaction = Transaction::new_with_payer(&instructions, Some(&payer.pubkey()));
+    transaction.sign(&[payer, &pool.account], bank.hash);
+    CreateMegaSwapTransaction {
+        transaction,
+        result: TokenMegaSwap {
+            mint: pool_mint,
+            pool,
+        },
+    }
+}
 
 pub async fn get_token_balance(banks_client: &mut BanksClient, token: &Pubkey) -> u64 {
     let token_account = banks_client.get_account(*token).await.unwrap().unwrap();
