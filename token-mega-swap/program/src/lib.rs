@@ -1,4 +1,4 @@
-//! binary oracle pair
+//! mega swap
 //TODO: fix it #![deny(missing_docs)]
 
 mod borsh;

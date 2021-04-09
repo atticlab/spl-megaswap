@@ -19,8 +19,8 @@ pub enum Instruction {
     ///  InitializeAssetInput
     ///  
     /// Accounts:
-    ///   -           rent               Sysvar rent to check rent exempt balance on asset and token
-    ///   -           pool               Pool this asset will belong to
+    ///   - read      rent               Sysvar rent to check rent exempt balance on asset and token
+    ///   - read      pool               Pool this asset will belong to
     ///   - writable  asset              New asset account to initialize
     ///   - writable  token              Token account to store assets, owner should be asset authority    
     InitializeAsset,
@@ -31,8 +31,8 @@ pub enum Instruction {
     ///  InitializeAssetInput
     ///  
     /// Accounts:
-    ///   -            rent               Rent sysvar to check pool and pool_mint accounts balance
-    ///   -            program_token      Token program used to initialize the pool_mint
+    ///   - read       rent               Rent sysvar to check pool and pool_mint accounts balance
+    ///   - read       program_token      Token program used to initialize the pool_mint
     ///   - writable   pool               New pool to initialize    
     ///   - writable   pool_mint          New pool mint to initialize  
     ///   - writable   [asset]            Accounts of initialized assets with the same pool address    
@@ -90,7 +90,7 @@ pub fn initialize_pool(
     ];
 
     for asset in assets {
-        accounts.push(*asset);
+        accounts.push(AccountMeta::new(*asset, false));
     }
 
     Ok(solana_program::instruction::Instruction {
