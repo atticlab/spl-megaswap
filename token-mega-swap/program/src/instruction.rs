@@ -33,9 +33,9 @@ pub enum Instruction {
     /// Accounts:
     ///   -            rent               Rent sysvar to check pool and pool_mint accounts balance
     ///   -            program_token      Token program used to initialize the pool_mint
-    ///   -            pool               New pool to initialize    
-    ///   - writable   pool_mint          New pool mint to initialize
-    ///   - writable   [asset]            Accounts of initialized assets with the same pool address
+    ///   - writable   pool               New pool to initialize    
+    ///   - writable   pool_mint          New pool mint to initialize  
+    ///   - writable   [asset]            Accounts of initialized assets with the same pool address    
     InitializePool,
 
     Deposit,
@@ -44,46 +44,59 @@ pub enum Instruction {
     UpdateWeight,
 }
 
-// // /// Create `Prepare` instruction
-// #[allow(clippy::too_many_arguments)]
-// pub fn prepare(
-//     _swap: &Pubkey,
-//     swap_authority: &Pubkey,
-//     signer: &Pubkey,
-//     token_user_ab: &Pubkey,
-//     token_user_bc: &Pubkey,
-//     token_swap_ab: &Pubkey,
-//     token_swap_bc: &Pubkey,
-//     swap_ab: &Pubkey,
-//     token_swap_ab_total: &Pubkey,
-//     token_swap_ab_b_total: &Pubkey,
-//     swap_bc: &Pubkey,
-//     token_swap_bc_total: &Pubkey,
-//     token_swap_bc_b_total: &Pubkey,
-//     input: Prepare,
-// ) -> Result<solana_program::instruction::Instruction, ProgramError> {
-//     let mut data = Instruction::Prepare.try_to_vec()?;
-//     let mut input = input.try_to_vec()?;
-//     data.append(&mut input);
-//     let accounts = vec![
-//         AccountMeta::new_readonly(spl_token::id(), false),
-//         AccountMeta::new_readonly(*_swap, true), // makes sure prepare in same transaction
-//         AccountMeta::new_readonly(*swap_authority, false),
-//         AccountMeta::new_readonly(*signer, true),
-//         AccountMeta::new(*token_user_ab, false),
-//         AccountMeta::new(*token_user_bc, false),
-//         AccountMeta::new(*token_swap_ab, false),
-//         AccountMeta::new(*token_swap_bc, false),
-//         AccountMeta::new_readonly(*swap_ab, false),
-//         AccountMeta::new_readonly(*token_swap_ab_total, false),
-//         AccountMeta::new_readonly(*token_swap_ab_b_total, false),
-//         AccountMeta::new_readonly(*swap_bc, false),
-//         AccountMeta::new_readonly(*token_swap_bc_total, false),
-//         AccountMeta::new_readonly(*token_swap_bc_b_total, false),
-//     ];
-//     Ok(solana_program::instruction::Instruction {
-//         program_id: crate::id(),
-//         accounts,
-//         data,
-//     })
-// }
+/// Create `InitializeAsset` instruction
+#[allow(clippy::too_many_arguments)]
+pub fn initialize_asset(
+    rent: &Pubkey,
+    pool: &Pubkey,
+    asset: &Pubkey,
+    token: &Pubkey,    
+    input: InitializeAssetInput,
+) -> Result<solana_program::instruction::Instruction, ProgramError> {
+    let mut data = Instruction::InitializeAsset.try_to_vec()?;
+    let mut input = input.try_to_vec()?;
+    data.append(&mut input);
+    let accounts = vec![
+        AccountMeta::new_readonly(*rent, false),
+        AccountMeta::new_readonly(*pool, false), // makes sure prepare in same transaction
+        AccountMeta::new(*asset, false),        
+        AccountMeta::new(*token, false),        
+    ];
+    Ok(solana_program::instruction::Instruction {
+        program_id: crate::id(),
+        accounts,
+        data,
+    })
+}
+
+/// Create `InitializePool` instruction
+#[allow(clippy::too_many_arguments)]
+pub fn initialize_pool(
+    rent:&Pubkey,
+    program_token: &Pubkey,
+    pool:&Pubkey,
+    pool_mint: &Pubkey,
+    assets:&[Pubkey],
+    input: InitializeAssetInput,
+) -> Result<solana_program::instruction::Instruction, ProgramError> {
+    let mut data = Instruction::InitializeAsset.try_to_vec()?;
+    let mut input = input.try_to_vec()?;
+    data.append(&mut input);
+    let mut accounts = vec![
+        AccountMeta::new_readonly(*rent, false),
+        AccountMeta::new_readonly(*program_token, false), // makes sure prepare in same transaction
+        AccountMeta::new_readonly(*pool, false), // makes sure prepare in same transaction
+        AccountMeta::new(*pool_mint, false),        
+    ];
+
+    for asset in assets {
+        accounts.push(*asset);
+    }
+
+    Ok(solana_program::instruction::Instruction {
+        program_id: crate::id(),
+        accounts,
+        data,
+    })
+}
+

@@ -16,7 +16,6 @@ use crate::{
     borsh::*,
     error::PoolError,
     instruction::{InitializeAssetInput, Instruction},
-    invoke::{self},
     state::*,
 };
 
@@ -34,7 +33,7 @@ impl Processor {
     ) -> ProgramResult {
         let rent = Rent::from_account_info(rent)?;
         if rent.is_exempt(asset.lamports(), AssetState::len())
-            || rent.is_exempt(token.lamports(), Account::LEN)
+            && rent.is_exempt(token.lamports(), Account::LEN)
         {
             let token = token.try_borrow_data()?;
             let token = spl_token::state::Account::unpack_from_slice(&token[..])?;
@@ -68,12 +67,12 @@ impl Processor {
         rent: &AccountInfo<'a>,
         program_token: &AccountInfo<'a>,
         pool: &AccountInfo<'a>,
-        pool_mint: &AccountInfo<'a>,
+        pool_mint: &AccountInfo<'a>, // to initialize mint we need pool_token mint_to, and default value of tokens in pool. there are 2 options - create account out of chain and pass or on chain; and authority could be pool or not 
         assets: &'_ [AccountInfo<'_>],
     ) -> ProgramResult {
         let rent = Rent::from_account_info(rent)?;
         if rent.is_exempt(pool.lamports(), PoolState::len())
-            || rent.is_exempt(pool_mint.lamports(), Mint::LEN)
+            && rent.is_exempt(pool_mint.lamports(), Mint::LEN)
         {
             let weight_total = {
                 let assets: Result<Vec<AssetState>, ProgramError> = assets
@@ -135,7 +134,7 @@ impl Processor {
             Instruction::InitializePool => {
                 msg!("Instruction: InitializeAsset");
                 match accounts {
-                    [rent, program_token, pool, pool_mint, ..] => Self::initialize_pool(
+                    [rent, program_token, pool, pool_mint, _, _, ..] => Self::initialize_pool(
                         program_id,
                         rent,
                         program_token,

@@ -4,8 +4,6 @@
 mod borsh;
 pub mod error;
 pub mod instruction;
-mod invoke;
-pub mod math;
 pub mod processor;
 #[cfg(test)]
 mod processor_tests;

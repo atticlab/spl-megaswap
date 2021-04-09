@@ -1,25 +1,20 @@
 // #![cfg(feature = "test-bpf")]
 
-// use solana_program::pubkey::Pubkey;
-// use solana_program_test::*;
-// use solana_sdk::signature::{Keypair, Signer};
+use solana_program::pubkey::Pubkey;
+use solana_program_test::*;
+use solana_sdk::signature::{Keypair, Signer};
 
-// use spl_token_swap::instruction::Swap;
 
-// use crate::{id, instruction::Prepare, processor, test::*};
+use crate::{id, instruction::*, processor, test::*};
 
-// pub fn program_test() -> ProgramTest {
-//     let mut program_test = ProgramTest::new(
-//         "spl_token_mega_swap",
-//         id(),
-//         processor!(processor::Processor::process_instruction),
-//     );
-
-//     program_test.add_program("spl_token", spl_token::id(), None);
-//     program_test.add_program("spl_token_swap", spl_token_swap::id(), None);
-
-//     program_test
-// }
+pub fn program_test() -> ProgramTest {
+    let mut program_test = ProgramTest::new(
+        "spl_token_mega_swap",
+        id(),
+        processor!(processor::Processor::process_instruction),
+    );
+    program_test
+}
 
 // struct A;
 // struct B;
