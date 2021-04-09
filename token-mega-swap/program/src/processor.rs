@@ -25,17 +25,12 @@ impl Processor {
         token: &AccountInfo<'a>,
         input: &InitializeAssetInput,
     ) -> ProgramResult {
-        msg!("Instruction: InitializeAsset: before rent");
         let rent = Rent::from_account_info(rent)?;
-        msg!("Instruction: InitializeAsset: after rent");
         if rent.is_exempt(asset.lamports(), AssetState::len())
             && rent.is_exempt(token.lamports(), Account::LEN)
         {
-            msg!("Instruction: InitializeAsset: try_borrow_data");
             let token = token.try_borrow_data()?;
-            msg!("Instruction: InitializeAsset: unpack_from_slice");
             let token = spl_token::state::Account::unpack_from_slice(&token[..])?;
-            msg!("Instruction: InitializeAsset: find_program_address");
             let (authority, _) =
                 Pubkey::find_program_address(&[&asset.key.to_bytes()[..32]], &program_id);
             if token.owner == authority {
