@@ -11,6 +11,7 @@ impl<T> BorshSerializeConst for T
 where
     T: BorshSerialize,
 {
+    #[allow(clippy::redundant_slicing)] // for some reason rust clippy this but fails to compile clippied
     fn serialize_const(&self, writer: &mut [u8]) -> std::io::Result<()> {
         let mut writer = &mut writer[..];
         self.serialize(&mut writer)
@@ -25,6 +26,7 @@ impl<T> BorshDeserialiseConst<T> for T
 where
     T: BorshDeserialize,
 {
+    #[allow(clippy::redundant_slicing)] // for some reason rust clippy this but fails to compile clippied
     fn deserialize_const(writer: &[u8]) -> std::io::Result<T> {
         let mut writer = &writer[..];
         Self::deserialize(&mut writer)

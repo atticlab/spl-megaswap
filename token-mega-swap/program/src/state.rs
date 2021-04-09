@@ -56,7 +56,8 @@ pub struct PoolState {
 
 impl PoolState {
     pub fn len() -> usize {
-        solana_program::borsh::get_packed_len::<Self>()
+        73
+        //solana_program::borsh::get_packed_len::<Self>()
     }
 }
 
@@ -75,6 +76,18 @@ pub struct AssetState {
 
 impl AssetState {
     pub fn len() -> usize {
-        solana_program::borsh::get_packed_len::<Self>()
+        73
+        // cannot use next as it violates access in BPF
+        //solana_program::borsh::get_packed_len::<Self>()
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    #[test]
+    pub fn len() {
+        assert_eq!(AssetState::len(), 73);
+        assert_eq!(PoolState::len(), 73);
     }
 }

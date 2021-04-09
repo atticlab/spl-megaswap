@@ -16,12 +16,11 @@ use crate::{
 };
 
 pub fn program_test() -> ProgramTest {
-    let mut program_test = ProgramTest::new(
+    ProgramTest::new(
         "spl_token_mega_swap",
         id(),
         processor!(processor::Processor::process_instruction),
-    );
-    program_test
+    )
 }
 
 struct A;

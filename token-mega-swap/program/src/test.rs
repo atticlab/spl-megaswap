@@ -1,6 +1,6 @@
 //! Helper function for testing.
 #![cfg(feature = "test-bpf")]
-#![allows(dead_code)] // for future setups
+#![allow(dead_code)] // for future setups
 
 use std::marker::PhantomData;
 

@@ -1,6 +1,5 @@
 //! Program state processor
-#[allow(unused_imports)]
-use borsh::{BorshDeserialize, BorshSerialize};
+use borsh::BorshDeserialize;
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
     program_pack::Pack, pubkey::Pubkey, rent::Rent, sysvar::Sysvar,
@@ -26,12 +25,17 @@ impl Processor {
         token: &AccountInfo<'a>,
         input: &InitializeAssetInput,
     ) -> ProgramResult {
+        msg!("Instruction: InitializeAsset: before rent");
         let rent = Rent::from_account_info(rent)?;
+        msg!("Instruction: InitializeAsset: after rent");
         if rent.is_exempt(asset.lamports(), AssetState::len())
             && rent.is_exempt(token.lamports(), Account::LEN)
         {
+            msg!("Instruction: InitializeAsset: try_borrow_data");
             let token = token.try_borrow_data()?;
+            msg!("Instruction: InitializeAsset: unpack_from_slice");
             let token = spl_token::state::Account::unpack_from_slice(&token[..])?;
+            msg!("Instruction: InitializeAsset: find_program_address");
             let (authority, _) =
                 Pubkey::find_program_address(&[&asset.key.to_bytes()[..32]], &program_id);
             if token.owner == authority {
@@ -121,6 +125,7 @@ impl Processor {
                         let input = super::instruction::InitializeAssetInput::deserialize_const(
                             &input[1..],
                         )?;
+
                         Self::initialize_asset(program_id, rent, pool, asset, token, &input)
                     }
                     _ => Err(ProgramError::NotEnoughAccountKeys),
