@@ -1,13 +1,19 @@
-// #![cfg(feature = "test-bpf")]
+#![cfg(feature = "test-bpf")]
 
 use solana_program::pubkey::Pubkey;
 use solana_program_test::*;
 use solana_sdk::signature::{Keypair, Signer};
 
-use crate::{id, instruction::*, processor, state::PoolState, test::{
+use crate::{
+    id,
+    instruction::*,
+    processor,
+    state::PoolState,
+    test::{
         create_asset, create_mega_swap, create_mint, create_token_account, BankInfo,
         ProgramAuthority,
-    }};
+    },
+};
 
 pub fn program_test() -> ProgramTest {
     let mut program_test = ProgramTest::new(
@@ -56,5 +62,13 @@ async fn flow() {
     let pool = create_mega_swap(&bank, &payer, pool, mint, &assets[..]);
     let pool = pool.process_transaction(&mut blockchain).await;
 
-    let pool = blockchain.get_account_data_with_borsh::<PoolState>(pool.pubkey()).await.unwrap();
+    let pool = blockchain
+        .get_account_data_with_borsh::<PoolState>(pool.pubkey())
+        .await
+        .unwrap();
+
+    let seeds: Vec<_> = assets.iter().map(|x| x.to_bytes()).collect();
+    let seeds: Vec<&[u8]> = seeds.iter().map(|x| &x[..]).collect();
+    let hash = Pubkey::find_program_address(&seeds[..], &crate::id()).0;
+    assert_eq!(hash, pool.assets_hash);
 }

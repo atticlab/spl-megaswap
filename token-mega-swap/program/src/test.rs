@@ -1,5 +1,6 @@
 //! Helper function for testing.
-//#![cfg(feature = "test-bpf")]
+#![cfg(feature = "test-bpf")]
+#![allows(dead_code)] // for future setups
 
 use std::marker::PhantomData;
 
@@ -8,7 +9,7 @@ use solana_program::{
     pubkey::Pubkey,
     rent::Rent,
     system_instruction,
-    sysvar::{self, SysvarId},
+    sysvar::{self},
 };
 use solana_program_test::*;
 use solana_sdk::{
@@ -261,7 +262,7 @@ pub fn create_asset<T>(
     input: InitializeAssetInput,
 ) -> CreateAssetTransaction {
     let rent = bank.rent.minimum_balance(crate::state::AssetState::len());
-    let mut instructions = vec![
+    let instructions = vec![
         system_instruction::create_account(
             &payer.pubkey(),
             &asset.pubkey(),

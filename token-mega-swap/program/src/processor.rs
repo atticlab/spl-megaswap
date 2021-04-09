@@ -9,7 +9,6 @@ use spl_token::state::{Account, Mint};
 
 use super::borsh::*;
 use crate::{
-    borsh::*,
     error::PoolError,
     instruction::{InitializeAssetInput, Instruction},
     state::*,
@@ -47,13 +46,13 @@ impl Processor {
                     state.serialize_const(&mut data[..])?;
                     Ok(())
                 } else {
-                    return Err(ProgramError::AccountAlreadyInitialized);
+                    Err(ProgramError::AccountAlreadyInitialized)
                 }
             } else {
-                return Err(PoolError::TokenMustBeUnderAssetAuthority.into());
+                Err(PoolError::TokenMustBeUnderAssetAuthority.into())
             }
         } else {
-            return Err(ProgramError::AccountNotRentExempt);
+            Err(ProgramError::AccountNotRentExempt)
         }
     }
 
@@ -98,12 +97,12 @@ impl Processor {
                 state.assets_hash = Pubkey::find_program_address(&seeds[..], program_id).0;
                 let mut data = pool.try_borrow_mut_data()?;
                 state.serialize_const(&mut data[..])?;
-                return Ok(());
+                Ok(())
             } else {
-                return Err(ProgramError::AccountAlreadyInitialized);
+                Err(ProgramError::AccountAlreadyInitialized)
             }
         } else {
-            return Err(ProgramError::AccountNotRentExempt);
+            Err(ProgramError::AccountNotRentExempt)
         }
     }
 
