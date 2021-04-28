@@ -64,7 +64,10 @@ pub enum Instruction {
 
     Swap,
 
+    // ? like in balancer?
     UpdateWeight,
+
+    // delegate amount with throw away signature?
 }
 
 /// Create `InitializeAsset` instruction
