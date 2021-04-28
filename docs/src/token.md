@@ -83,6 +83,15 @@ Hardware Wallet URL (See [URL spec](https://docs.solana.com/wallet-guide/hardwar
 solana config set --keypair usb://ledger/
 ```
 
+#### Airdrop SOL
+
+Creating tokens and accounts requires SOL for account rent deposits and
+transaction fees. If the cluster you are targeting offers a faucet, you can get
+a little SOL for testing:
+```
+solana airdrop 1
+```
+
 ### Example: Creating your own fungible token
 
 ```sh
@@ -109,7 +118,7 @@ Signature: 42Sa5eK9dMEQyvD9GMHuKxXf55WLZ7tfjabUKDhNoZRAxj9MsnN7omriWMEHXLea3aYpj
 
 `7UX2i7SucgLMQcfZ75s3VXmZZY4YRUyJN9X1RgfMoDUi` is now an empty account:
 ```sh
-$ spl-token balance 7UX2i7SucgLMQcfZ75s3VXmZZY4YRUyJN9X1RgfMoDUi
+$ spl-token balance AQoKYV7tYpTrFZN6P5oUufbQKAUr9mNYGe1TTJC9wajM
 0
 ```
 
@@ -126,7 +135,7 @@ The token `supply` and account `balance` now reflect the result of minting:
 ```sh
 $ spl-token supply AQoKYV7tYpTrFZN6P5oUufbQKAUr9mNYGe1TTJC9wajM
 100
-$ spl-token balance 7UX2i7SucgLMQcfZ75s3VXmZZY4YRUyJN9X1RgfMoDUi
+$ spl-token balance AQoKYV7tYpTrFZN6P5oUufbQKAUr9mNYGe1TTJC9wajM
 100
 ```
 
@@ -166,7 +175,7 @@ address by running `solana address` and provides it to the sender.
 
 The sender then runs:
 ```
-$ spl-token transfer 7UX2i7SucgLMQcfZ75s3VXmZZY4YRUyJN9X1RgfMoDUi 50 vines1vzrYbzLMRdu58ou5XTby4qAqVRLmqo36NKPTg
+$ spl-token transfer AQoKYV7tYpTrFZN6P5oUufbQKAUr9mNYGe1TTJC9wajM 50 vines1vzrYbzLMRdu58ou5XTby4qAqVRLmqo36NKPTg
 Transfer 50 tokens
   Sender: 7UX2i7SucgLMQcfZ75s3VXmZZY4YRUyJN9X1RgfMoDUi
   Recipient: vines1vzrYbzLMRdu58ou5XTby4qAqVRLmqo36NKPTg
@@ -184,7 +193,7 @@ The receiver obtains their wallet address by running `solana address` and provid
 The sender then runs to fund the receiver's associated token account, at the
 sender's expense, and then transfers 50 tokens into it:
 ```
-$ spl-token transfer --fund-recipient 7UX2i7SucgLMQcfZ75s3VXmZZY4YRUyJN9X1RgfMoDUi 50 vines1vzrYbzLMRdu58ou5XTby4qAqVRLmqo36NKPTg
+$ spl-token transfer --fund-recipient AQoKYV7tYpTrFZN6P5oUufbQKAUr9mNYGe1TTJC9wajM 50 vines1vzrYbzLMRdu58ou5XTby4qAqVRLmqo36NKPTg
 Transfer 50 tokens
   Sender: 7UX2i7SucgLMQcfZ75s3VXmZZY4YRUyJN9X1RgfMoDUi
   Recipient: vines1vzrYbzLMRdu58ou5XTby4qAqVRLmqo36NKPTg
