@@ -10,8 +10,15 @@ pub struct InitializeAssetInput {
     pub weight: u64,
 }
 
+#[repr(C)]
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Debug, Clone, BorshSchema)]
+pub struct DepositInput {
+    pub amount: u64,
+}
+
+
 /// Instructions
-#[derive(BorshSerialize, BorshDeserialize, PartialEq, Debug, Clone, ToPrimitive)]
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Debug, Clone)]
 pub enum Instruction {
     /// Initializes asset input
     ///
@@ -19,10 +26,10 @@ pub enum Instruction {
     ///  InitializeAssetInput
     ///  
     /// Accounts:
-    ///   - read      rent               Sysvar rent to check rent exempt balance on asset and token
-    ///   - read      pool               Pool this asset will belong to
-    ///   - writable  asset              New asset account to initialize
-    ///   - writable  token              Token account to store assets, owner should be asset authority    
+    ///   -           pool               Pool this asset will belong to
+    ///   - mut       asset              New asset account to initialize
+    ///   - mut       token              Token account to store assets, owner should be asset authority    
+    ///   - sysvar    rent               Sysvar rent to check rent exempt balance on asset and token
     InitializeAsset,
 
     /// Initializes pool of assets
@@ -31,16 +38,32 @@ pub enum Instruction {
     ///  InitializeAssetInput
     ///  
     /// Accounts:
-    ///   - read       rent               Rent sysvar to check pool and pool_mint accounts balance
-    ///   - read       program_token      Token program used to initialize the pool_mint
-    ///   - writable   pool               New pool to initialize    
-    ///   - writable   pool_mint          New pool mint to initialize  
-    ///   - writable   [asset]            Accounts of initialized assets with the same pool address    
+    ///   - mut           pool               New pool to initialize    
+    ///   - mut           pool_mint          New pool mint to initialize  
+    ///   ?- mut          pool_token_account
+    ///   - read, sysvar  rent               Rent sysvar to check pool and pool_mint accounts balance    
+    ///   - read          program_token      Token program used to initialize the pool_mint
+    ///   - mut           [asset]            Accounts of initialized assets with the same pool address  
+    ///   -  
     InitializePool,
 
-    Deposit,
+
+    /// Deposit all vs one? How to deposit one into empty?
+    /// 
+    /// Accounts:
+    /// ?-           asset
+    /// ?- mut,cpi   asset_token_account
+    /// ?-           user_authority
+    /// ?- mut,cpi   user_token_account_input
+    /// ?-           pool_mint         
+    /// ?- mut       user_pool_token_account    user's pool token account
+    Deposit(DepositInput),
+
+    /// if one  
     Withdraw,
+
     Swap,
+
     UpdateWeight,
 }
 

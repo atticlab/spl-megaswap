@@ -1,7 +1,8 @@
 //! mega swap
 //TODO: fix it #![deny(missing_docs)]
 
-mod borsh;
+pub mod utils;
+use utils::borsh;
 pub mod error;
 pub mod instruction;
 pub mod processor;
