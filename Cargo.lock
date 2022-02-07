@@ -32,6 +32,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "739f4a8db6605981345c5654f3a85b056ce52f37a39d34da03f25bf2151ea16e"
 
 [[package]]
+name = "ahash"
+version = "0.7.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "43bb833f0bf979d8475d38fbf09ed3b8a55e1885fe93ad3f93239fc6a4f17b98"
+dependencies = [
+ "getrandom 0.2.2",
+ "once_cell",
+ "version_check",
+]
+
+[[package]]
 name = "aho-corasick"
 version = "0.7.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -250,8 +261,18 @@ version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "09a7111f797cc721407885a323fb071636aee57f750b1a4ddc27397eba168a74"
 dependencies = [
- "borsh-derive",
- "hashbrown",
+ "borsh-derive 0.8.2",
+ "hashbrown 0.9.1",
+]
+
+[[package]]
+name = "borsh"
+version = "0.9.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "15bf3650200d8bffa99015595e10f1fbd17de07abbc25bb067da79e769939bfa"
+dependencies = [
+ "borsh-derive 0.9.3",
+ "hashbrown 0.11.2",
 ]
 
 [[package]]
@@ -260,8 +281,21 @@ version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "307f3740906bac2c118a8122fe22681232b244f1369273e45f1156b45c43d2dd"
 dependencies = [
- "borsh-derive-internal",
- "borsh-schema-derive-internal",
+ "borsh-derive-internal 0.8.2",
+ "borsh-schema-derive-internal 0.8.2",
+ "proc-macro-crate",
+ "proc-macro2 1.0.24",
+ "syn 1.0.64",
+]
+
+[[package]]
+name = "borsh-derive"
+version = "0.9.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6441c552f230375d18e3cc377677914d2ca2b0d36e52129fe15450a2dce46775"
+dependencies = [
+ "borsh-derive-internal 0.9.3",
+ "borsh-schema-derive-internal 0.9.3",
  "proc-macro-crate",
  "proc-macro2 1.0.24",
  "syn 1.0.64",
@@ -279,10 +313,32 @@ dependencies = [
 ]
 
 [[package]]
+name = "borsh-derive-internal"
+version = "0.9.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5449c28a7b352f2d1e592a8a28bf139bc71afb0764a14f3c02500935d8c44065"
+dependencies = [
+ "proc-macro2 1.0.24",
+ "quote 1.0.8",
+ "syn 1.0.64",
+]
+
+[[package]]
 name = "borsh-schema-derive-internal"
 version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ae29eb8418fcd46f723f8691a2ac06857d31179d33d2f2d91eb13967de97c728"
+dependencies = [
+ "proc-macro2 1.0.24",
+ "quote 1.0.8",
+ "syn 1.0.64",
+]
+
+[[package]]
+name = "borsh-schema-derive-internal"
+version = "0.9.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cdbd5696d8bfa21d53d9fe39a714a18538bad11492a42d066dbbc395fb1951c0"
 dependencies = [
  "proc-macro2 1.0.24",
  "quote 1.0.8",
@@ -1272,7 +1328,16 @@ version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d7afe4a420e3fe79967a00898cc1f4db7c8a49a9333a29f8a4bd76a253d5cd04"
 dependencies = [
- "ahash",
+ "ahash 0.4.7",
+]
+
+[[package]]
+name = "hashbrown"
+version = "0.11.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ab5ef0d4909ef3724cc8cce6ccc8572c5c817592e9285f5464f8e86f8bd3726e"
+dependencies = [
+ "ahash 0.7.4",
 ]
 
 [[package]]
@@ -1459,7 +1524,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4fb1fa934250de4de8aef298d81c729a7d33d8c239daa3a7575e6b92bfc7313b"
 dependencies = [
  "autocfg",
- "hashbrown",
+ "hashbrown 0.9.1",
 ]
 
 [[package]]
@@ -3015,8 +3080,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "84e398e020121174a8c7d0817ecd03bea68d0540d1c35f0b1ae1c192c496b8d3"
 dependencies = [
  "bincode",
- "borsh",
- "borsh-derive",
+ "borsh 0.8.2",
+ "borsh-derive 0.8.2",
  "futures 0.3.12",
  "mio 0.7.7",
  "solana-banks-interface",
@@ -3331,8 +3396,8 @@ checksum = "885552ce43e9f2cf13fda274bf2b4ef75c5de6e5e0190f53acb83f84cda739c0"
 dependencies = [
  "bincode",
  "blake3",
- "borsh",
- "borsh-derive",
+ "borsh 0.8.2",
+ "borsh-derive 0.8.2",
  "bs58 0.3.1",
  "bv",
  "curve25519-dalek 2.1.2",
@@ -3669,7 +3734,7 @@ name = "spl-binary-oracle-pair"
 version = "0.1.0"
 dependencies = [
  "arbitrary",
- "borsh",
+ "borsh 0.9.3",
  "num-derive",
  "num-traits",
  "solana-program",
@@ -3729,8 +3794,8 @@ dependencies = [
 name = "spl-feature-proposal"
 version = "1.0.0"
 dependencies = [
- "borsh",
- "borsh-derive",
+ "borsh 0.9.3",
+ "borsh-derive 0.8.2",
  "futures 0.3.12",
  "solana-program",
  "solana-program-test",
@@ -3756,8 +3821,8 @@ dependencies = [
 name = "spl-math"
 version = "0.1.0"
 dependencies = [
- "borsh",
- "borsh-derive",
+ "borsh 0.9.3",
+ "borsh-derive 0.8.2",
  "num-derive",
  "num-traits",
  "proptest",
@@ -3790,8 +3855,8 @@ dependencies = [
 name = "spl-record"
 version = "0.1.0"
 dependencies = [
- "borsh",
- "borsh-derive",
+ "borsh 0.9.3",
+ "borsh-derive 0.8.2",
  "num-derive",
  "num-traits",
  "solana-program",
@@ -3816,7 +3881,7 @@ version = "0.1.0"
 dependencies = [
  "arrayref",
  "bincode",
- "borsh",
+ "borsh 0.9.3",
  "num-derive",
  "num-traits",
  "num_enum",
@@ -3837,7 +3902,7 @@ name = "spl-stake-pool-cli"
 version = "2.0.1"
 dependencies = [
  "bincode",
- "borsh",
+ "borsh 0.9.3",
  "bs58 0.4.0",
  "clap",
  "lazy_static",
